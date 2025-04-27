@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌟 স্মার্ট দৈনিক রুটিন V6.1 🌟</title> <!-- সংস্করণ আপডেট -->
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script> <!-- ใช้ .min.js -->
+
+    <style>
+        /* Custom Styles */
+        body {
+            font-family: 'Poppins', 'Hind Siliguri', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            scroll-behavior: smooth;
+        }
+
+        .font-bengali {
+            font-family: 'Hind Siliguri', sans-serif;
+        }
+
+        /* Custom scrollbar for suggestions */
+        .suggestions-list::-webkit-scrollbar { width: 5px; }
+        .suggestions-list::-webkit-scrollbar-track { background: #e5e7eb; border-radius: 10px; }
+        .suggestions-list::-webkit-scrollbar-thumb { background: #9ca3af; border-radius: 10px; }
+        .suggestions-list::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+
+        /* Animations */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+
+        @keyframes fadeInRow { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        .new-task-animation { animation: fadeInRow 0.6s cubic-bezier(0.165, 0.84, 0.44, 1) forwards; }
+
+        @keyframes pulseHighlight {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(20, 184, 166, 0.3); } /* teal-500 */
+            50% { box-shadow: 0 0 0 8px rgba(20, 184, 166, 0); }
+        }
+        .current-task-pulse-anim { animation: pulseHighlight 1.5s ease-out; }
+
+        /* Notification Styling */
+        #notification-area {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 1050;
+            width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .notification {
+            padding: 1rem;
+            border-radius: 0.75rem;
+            color: white;
+            font-size: 0.9rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            opacity: 0;
+            transform: translateX(120%);
+            transition: all 0.6s cubic-bezier(0.68, -0.6, 0.32, 1.6);
+        }
+        .notification.show { opacity: 1; transform: translateX(0); }
+        .notification.success { background: linear-gradient(135deg, #2dd4bf, #14b8a6); }
+        .notification.error { background: linear-gradient(135deg, #f87171, #ef4444); }
+        .notification.warning { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+        .notification i { font-size: 1.25rem; }
+
+        /* Priority Dot Styles */
+        .priority-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 4px; vertical-align: middle; }
+        .priority-high { background-color: #ef4444; } /* red-500 */
+        .priority-medium { background-color: #f59e0b; } /* amber-500 */
+        .priority-low { background-color: #22c55e; } /* green-500 */
+
+        /* Category Badge Styles */
+        .category-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 500; white-space: nowrap; border: 1px solid transparent; }
+        .category-study { background-color: #eff6ff; color: #3b82f6; border-color: #bfdbfe; } /* blue */
+        .category-prayer { background-color: #f0fdf4; color: #22c55e; border-color: #bbf7d0; } /* green */
+        .category-meal { background-color: #fffbeb; color: #f59e0b; border-color: #fde68a; } /* amber */
+        .category-break { background-color: #f3e8ff; color: #a855f7; border-color: #e9d5ff; } /* purple */
+        .category-personal { background-color: #fef2f2; color: #ef4444; border-color: #fecaca; } /* red */
+        .category-work { background-color: #f1f5f9; color: #475569; border-color: #e2e8f0; } /* slate */
+        .category-other { background-color: #ecfdf5; color: #10b981; border-color: #a7f3d0; } /* emerald */
+
+        /* Modal Transition */
+        #update-modal { transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out; }
+        #modal-content { transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease-in-out; transform: scale(0.95) translateY(-20px); opacity: 0; }
+        #update-modal:not(.hidden) #modal-content { transform: scale(1) translateY(0); opacity: 1; }
+
+        /* Print Styles Improved */
+        @media print {
+            body {
+                font-family: 'Hind Siliguri', sans-serif !important; /* Ensure font */
+                background: #fff !important; /* Force white background */
+                color: #000 !important; /* Force black text */
+                font-size: 10pt !important; /* Suitable print size */
+                margin: 0; /* Remove default margins */
+                padding: 0;
+                -webkit-print-color-adjust: exact !important; /* Ensure colors print (use sparingly) */
+                print-color-adjust: exact !important;
+            }
+            .no-print { display: none !important; } /* Hide non-print elements */
+            .print-only { display: block !important; } /* Show print-only elements */
+
+             /* Ensure the main container uses full width and no fancy styling */
+             .app-container-for-print {
+                box-shadow: none !important;
+                border: none !important;
+                padding: 1cm !important; /* Add some print margin */
+                margin: 0 !important;
+                max-width: 100% !important;
+                background: none !important; /* No background */
+                backdrop-filter: none !important;
+                width: 100% !important;
+            }
+
+            header.no-print, .lg\\:col-span-1.no-print, .card.current-task.no-print, .card.no-print, #notification-area {
+                display: none !important; /* Explicitly hide sections */
+            }
+
+            .print-header, .print-footer {
+                display: block !important; /* Show headers/footers */
+                text-align: center !important;
+                margin-bottom: 1cm;
+                border-color: #000 !important; /* Black border for print */
+            }
+            .print-header { border-bottom: 1px solid #000; padding-bottom: 0.5cm; }
+            .print-footer { border-top: 1px solid #000; padding-top: 0.5cm; margin-top: 1cm; }
+            .print-header h1 { font-size: 14pt !important; color: #000 !important; }
+            .print-footer p { font-size: 8pt !important; color: #555 !important; }
+
+            /* Table Styling for Print */
+            .print-table-container { overflow: visible !important; /* Don't hide overflow in print */ }
+            .routine-table-print { /* Use a dedicated class for print table if needed, or target .print-table */
+                width: 100% !important;
+                border-collapse: collapse !important;
+                margin-top: 0.5cm;
+                font-size: 9pt !important; /* Slightly smaller table font */
+            }
+            .routine-table-print th, .routine-table-print td {
+                border: 1px solid #ccc !important; /* Clear borders */
+                padding: 6px 8px !important; /* Consistent padding */
+                color: #000 !important; /* Black text */
+                vertical-align: top; /* Align content top */
+                text-align: left;
+                word-wrap: break-word; /* Allow long words to break */
+            }
+            .routine-table-print th {
+                background-color: #eee !important; /* Light grey header */
+                font-weight: 600 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .routine-table-print tr {
+                 page-break-inside: avoid !important; /* Try to keep rows together */
+            }
+            .routine-table-print td:nth-child(1) { width: 25%; } /* Time */
+            .routine-table-print td:nth-child(2) { width: 15%; white-space: nowrap; } /* Duration */
+            .routine-table-print td:nth-child(3) { width: 35%; } /* Activity */
+            .routine-table-print td:nth-child(4) { width: 25%; } /* Notes */
+            .routine-table-print td:nth-child(5) { display: none !important; } /* Hide Options column */
+            .routine-table-print th:nth-child(5) { display: none !important; } /* Hide Options header */
+
+            /* Hide visual elements, show text alternatives */
+            .priority-dot, .category-badge { display: none !important; }
+            .print-priority-category-text { display: inline !important; font-size: 8pt; color: #444; margin-left: 5px; }
+
+            #empty-routine-message {
+                border: 1px dashed #ccc !important;
+                padding: 1cm !important;
+                text-align: center !important;
+                color: #555 !important;
+            }
+             #empty-routine-message i { display: none !important; } /* Hide icon in print */
+        }
+        /* Ensure print-only is hidden by default */
+        .print-only { display: none; }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-6 lg:p-8 flex justify-center items-start">
+
+    <div id="notification-area"></div>
+
+    <!-- Add class app-container-for-print for print targeting -->
+    <div class="app-container bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl p-6 md:p-8 lg:p-10 w-full max-w-6xl border border-gray-200/30 fade-in app-container-for-print">
+        <header class="text-center mb-8 pb-5 border-b border-gray-300/70 no-print">
+            <h1 class="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-500 to-red-500 mb-2 flex items-center justify-center gap-3 font-bengali">
+                <i class="fas fa-calendar-check"></i> স্মার্ট দৈনিক রুটিন <span class="text-xs bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-2.5 py-1 rounded-full shadow-sm">V6.1</span>
+            </h1>
+            <div class="text-md text-gray-600 font-medium font-bengali" id="current-date">লোড হচ্ছে...</div>
+        </header>
+
+        <!-- Print Header - Hidden by default, shown via CSS -->
+        <div class="print-header print-only">
+            <h1 class="text-xl font-bold text-black font-bengali">আমার দৈনিক রুটিন</h1>
+            <div class="text-sm text-gray-600 font-bengali" id="print-date">...</div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+
+            <div class="lg:col-span-1 no-print">
+                <div class="card bg-white/90 rounded-xl shadow-lg p-6 sticky top-6 border border-gray-200/50">
+                    <h2 class="text-xl font-semibold text-gray-700 mb-5 pb-3 border-b border-gray-200 flex items-center gap-3 font-bengali">
+                        <i class="fas fa-plus-circle text-purple-500"></i> নতুন কাজ যোগ করুন
+                    </h2>
+                    <form id="routine-form" class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="task-start-time" class="block text-xs font-medium text-gray-600 mb-1 font-bengali">শুরুর সময়</label>
+                                <input type="time" id="task-start-time" class="form-control w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-300 focus:border-purple-500 transition duration-200 shadow-sm text-sm" required aria-label="কাজের শুরুর সময়">
+                            </div>
+                            <div>
+                                <label for="task-end-time" class="block text-xs font-medium text-gray-600 mb-1 font-bengali">শেষের সময়</label>
+                                <input type="time" id="task-end-time" class="form-control w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-300 focus:border-purple-500 transition duration-200 shadow-sm text-sm" required aria-label="কাজের শেষের সময়">
+                            </div>
+                        </div>
+                        <div class="relative">
+                            <label for="task-activity-search" class="block text-xs font-medium text-gray-600 mb-1 font-bengali">কাজ/বিষয়</label>
+                            <input type="text" id="task-activity-search" class="form-control w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-300 focus:border-purple-500 transition duration-200 shadow-sm font-bengali text-sm" placeholder="কাজ খুঁজুন বা টাইপ করুন..." required aria-label="কাজ বা বিষয়">
+                            <div class="suggestions-list absolute z-20 w-full bg-white border border-gray-300 rounded-md mt-1 shadow-lg max-h-40 overflow-y-auto hidden" id="activity-suggestions"></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="task-priority" class="block text-xs font-medium text-gray-600 mb-1 font-bengali">অগ্রাধিকার</label>
+                                <select id="task-priority" class="form-control w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-300 focus:border-purple-500 transition duration-200 shadow-sm text-sm font-bengali bg-white" aria-label="কাজের অগ্রাধিকার">
+                                    <option value="high">উচ্চ</option>
+                                    <option value="medium" selected>মাঝারি</option>
+                                    <option value="low">নিম্ন</option>
+                                </select>
+                            </div>
+                             <div>
+                                <label for="task-category" class="block text-xs font-medium text-gray-600 mb-1 font-bengali">বিভাগ</label>
+                                <select id="task-category" class="form-control w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-300 focus:border-purple-500 transition duration-200 shadow-sm text-sm font-bengali bg-white" aria-label="কাজের বিভাগ">
+                                    <option value="study" selected>পড়াশোনা</option>
+                                    <option value="prayer">ইবাদত</option>
+                                    <option value="meal">খাবার</option>
+                                    <option value="break">বিশ্রাম/বিনোদন</option>
+                                    <option value="personal">ব্যক্তিগত</option>
+                                    <option value="work">কাজ</option>
+                                    <option value="other">অন্যান্য</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="task-notes" class="block text-xs font-medium text-gray-600 mb-1 font-bengali">বিস্তারিত নোট (ঐচ্ছিক)</label>
+                            <textarea id="task-notes" class="form-control w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-300 focus:border-purple-500 transition duration-200 shadow-sm min-h-[60px] font-bengali text-sm" placeholder="কিছু নোট যোগ করুন..." aria-label="কাজের নোট"></textarea>
+                        </div>
+                        <button type="submit" class="btn w-full mt-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold py-2.5 px-5 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition duration-300 flex items-center justify-center gap-2 font-bengali text-sm">
+                            <i class="fas fa-plus"></i> রুটিনে যোগ করুন
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2 space-y-6">
+                <div class="card current-task bg-gradient-to-tr from-teal-50 via-cyan-50 to-sky-100 border-l-4 border-teal-500 rounded-xl shadow-lg p-5 no-print relative overflow-hidden transition-all duration-500">
+                    <div class="absolute top-0 right-0 text-teal-100 text-7xl opacity-20 -mt-3 -mr-3 transform rotate-12">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="relative z-10">
+                        <div id="current-task-header" class="flex items-center justify-between mb-2">
+                             <h3 id="current-task-info" class="text-xl md:text-2xl font-semibold text-teal-800 font-bengali transition-all duration-300">কোনো সক্রিয় কাজ নেই</h3>
+                             <div id="current-task-indicators" class="flex items-center gap-2">
+                                 <!-- Indicators like priority/category badge -->
+                             </div>
+                        </div>
+                        <div id="current-task-details" class="text-sm text-teal-700 space-y-1.5 font-bengali">
+                            <!-- Task time, duration, remaining time, notes -->
+                        </div>
+                        <div id="current-task-timer-bar" class="w-full bg-gray-200/70 rounded-full h-2 mt-4 overflow-hidden" style="display: none;">
+                            <div id="current-task-progress" class="bg-gradient-to-r from-teal-400 to-cyan-500 h-2 rounded-full transition-all duration-1000 ease-linear"></div>
+                        </div>
+                    </div>
+                </div>
+
+                 <!-- Routine Table Section -->
+                 <div class="card bg-white/90 rounded-xl shadow-lg p-6 border border-gray-200/50">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-5 pb-3 border-b border-gray-200">
+                        <h2 class="text-xl font-semibold text-gray-700 flex items-center gap-3 mb-3 sm:mb-0 font-bengali">
+                            <i class="fas fa-list-check text-blue-500"></i> আজকের রুটিন
+                        </h2>
+                        <button id="print-button" class="btn bg-blue-100 hover:bg-blue-200 text-blue-700 font-medium py-1.5 px-4 rounded-lg shadow-sm hover:shadow-md transition duration-300 flex items-center gap-2 text-sm font-bengali no-print" aria-label="রুটিন প্রিন্ট করুন">
+                            <i class="fas fa-print"></i> প্রিন্ট
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto print-table-container">
+                        <!-- Apply routine-table-print class for print specific styling -->
+                        <table class="min-w-full divide-y divide-gray-200 routine-table routine-table-print">
+                            <thead class="bg-gray-100/80">
+                                <tr>
+                                    <th scope="col" class="px-4 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider font-bengali">সময়</th>
+                                    <th scope="col" class="px-4 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider font-bengali">সময়কাল</th>
+                                    <th scope="col" class="px-4 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider font-bengali">কাজ/বিষয়</th>
+                                    <th scope="col" class="px-4 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider font-bengali">নোট</th>
+                                    <th scope="col" class="px-4 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider no-print font-bengali">অপশন</th>
+                                </tr>
+                            </thead>
+                            <tbody id="routine-table-body" class="bg-white divide-y divide-gray-200/70">
+                                <!-- Rows will be inserted here -->
+                            </tbody>
+                        </table>
+                        <div id="empty-routine-message" class="text-center py-12 px-4 text-gray-500" style="display: none;"> <!-- Initially hidden -->
+                            <i class="fas fa-calendar-plus text-5xl text-gray-300 mb-4 no-print"></i>
+                            <h3 class="text-lg font-medium mb-1 font-bengali">কোনো রুটিন যোগ করা হয়নি</h3>
+                            <p class="text-sm font-bengali">বাম পাশের ফর্মটি পূরণ করে শুরু করুন (অথবা প্রিন্টে একটি খালি টেবিল দেখতে পাবেন)।</p>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="card bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 border-l-4 border-indigo-400 rounded-xl shadow-lg p-6 no-print">
+                     <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold text-indigo-800 flex items-center gap-3 font-bengali">
+                            <i class="fas fa-wand-magic-sparkles"></i> দিনের সারসংক্ষেপ (AI)
+                        </h2>
+                        <button id="ai-summary-button" class="btn bg-indigo-500 hover:bg-indigo-600 text-white font-medium py-2 px-4 rounded-lg shadow-sm hover:shadow-md transition duration-300 flex items-center gap-2 font-bengali text-sm" aria-label="এ আই সারসংক্ষেপ তৈরি করুন" disabled> <!-- Initially disabled -->
+                            <i class="fas fa-sync-alt fa-spin hidden" id="ai-spinner"></i>
+                            <i class="fas fa-magic" id="ai-icon"></i>
+                            <span id="ai-button-text">তৈরি করুন</span>
+                        </button>
+                     </div>
+                    <div id="ai-summary-output" class="bg-white/60 p-4 rounded-lg border border-indigo-100 text-sm text-gray-700 leading-relaxed font-bengali space-y-3" style="display: none;">
+                        <!-- AI summary will appear here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+         <!-- Print Footer - Hidden by default, shown via CSS -->
+         <div class="print-footer print-only">
+            <p class="text-xs text-gray-600 font-bengali">© ২০২৫ স্মার্ট দৈনিক রুটিন V6.1</p>
+        </div>
+    </div>
+
+    <!-- Update Modal -->
+    <div id="update-modal" class="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex justify-center items-center z-50 p-4 hidden" aria-modal="true" role="dialog" aria-labelledby="modal-title">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg" id="modal-content"> <!-- Removed initial transform/opacity here, handled by JS -->
+            <div class="flex justify-between items-center p-5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-t-xl">
+                <h3 class="text-lg font-semibold flex items-center gap-2 font-bengali" id="modal-title"><i class="fas fa-edit"></i> কাজ আপডেট করুন</h3>
+                <button class="modal-close text-2xl hover:text-gray-300 transition duration-200" id="modal-close-button" aria-label="বন্ধ করুন">&times;</button>
+            </div>
+            <form id="update-routine-form" class="p-6 space-y-4">
+                <input type="hidden" id="update-task-id">
+                 <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="update-start-time" class="block text-xs font-medium text-gray-600 mb-1 font-bengali">শুরুর সময়</label>
+                        <input type="time" id="update-start-time" class="form-control w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-300 focus:border-purple-500 transition duration-200 shadow-sm text-sm" required aria-label="আপডেট শুরুর সময়">
+                    </div>
+                    <div>
+                        <label for="update-end-time" class="block text-xs font-medium text-gray-600 mb-1 font-bengali">শেষের সময়</label>
+                        <input type="time" id="update-end-time" class="form-control w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-300 focus:border-purple-500 transition duration-200 shadow-sm text-sm" required aria-label="আপডেট শেষের সময়">
+                    </div>
+                </div>
+                <div class="relative">
+                    <label for="update-task-activity-search" class="block text-xs font-medium text-gray-600 mb-1 font-bengali">কাজ/বিষয়</label>
+                    <input type="text" id="update-task-activity-search" class="form-control w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-300 focus:border-purple-500 transition duration-200 shadow-sm font-bengali text-sm" placeholder="কাজ খুঁজুন বা টাইপ করুন..." required aria-label="আপডেট কাজ বা বিষয়">
+                    <div class="suggestions-list absolute z-30 w-full bg-white border border-gray-300 rounded-md mt-1 shadow-lg max-h-40 overflow-y-auto hidden" id="update-activity-suggestions"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                     <div>
+                        <label for="update-task-priority" class="block text-xs font-medium text-gray-600 mb-1 font-bengali">অগ্রাধিকার</label>
+                        <select id="update-task-priority" class="form-control w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-300 focus:border-purple-500 transition duration-200 shadow-sm text-sm font-bengali bg-white" aria-label="আপডেট কাজের অগ্রাধিকার">
+                            <option value="high">উচ্চ</option>
+                            <option value="medium">মাঝারি</option>
+                            <option value="low">নিম্ন</option>
+                        </select>
+                    </div>
+                     <div>
+                        <label for="update-task-category" class="block text-xs font-medium text-gray-600 mb-1 font-bengali">বিভাগ</label>
+                        <select id="update-task-category" class="form-control w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-300 focus:border-purple-500 transition duration-200 shadow-sm text-sm font-bengali bg-white" aria-label="আপডেট কাজের বিভাগ">
+                             <option value="study">পড়াশোনা</option>
+                             <option value="prayer">ইবাদত</option>
+                             <option value="meal">খাবার</option>
+                             <option value="break">বিশ্রাম/বিনোদন</option>
+                             <option value="personal">ব্যক্তিগত</option>
+                             <option value="work">কাজ</option>
+                             <option value="other">অন্যান্য</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label for="update-task-notes" class="block text-xs font-medium text-gray-600 mb-1 font-bengali">বিস্তারিত নোট (ঐচ্ছিক)</label>
+                    <textarea id="update-task-notes" class="form-control w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-300 focus:border-purple-500 transition duration-200 shadow-sm min-h-[60px] font-bengali text-sm" aria-label="আপডেট কাজের নোট" placeholder="কিছু নোট যোগ করুন..."></textarea>
+                </div>
+                 <div class="flex justify-end gap-3 mt-5 pt-4 border-t border-gray-200">
+                    <button type="button" class="btn bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-5 rounded-lg shadow-sm transition duration-300 font-bengali text-sm" id="modal-cancel-button" aria-label="বাতিল">বাতিল</button>
+                    <button type="submit" class="btn bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:shadow-lg transition duration-300 flex items-center gap-2 font-bengali text-sm" aria-label="পরিবর্তন সেভ করুন">
+                        <i class="fas fa-save"></i> সেভ করুন
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Element References ---
+            const routineForm = document.getElementById('routine-form');
+            const taskStartTimeInput = document.getElementById('task-start-time');
+            const taskEndTimeInput = document.getElementById('task-end-time');
+            const taskActivitySearchInput = document.getElementById('task-activity-search');
+            const activitySuggestionsDiv = document.getElementById('activity-suggestions');
+            const taskPriorityInput = document.getElementById('task-priority');
+            const taskCategoryInput = document.getElementById('task-category');
+            const taskNotesInput = document.getElementById('task-notes');
+
+            const routineTableBody = document.getElementById('routine-table-body');
+            const printButton = document.getElementById('print-button');
+            const currentDateDisplay = document.getElementById('current-date');
+            const printDateDisplay = document.getElementById('print-date');
+            const currentTaskCard = document.querySelector('.current-task');
+            const currentTaskInfo = document.getElementById('current-task-info');
+            const currentTaskDetails = document.getElementById('current-task-details');
+            const currentTaskIndicators = document.getElementById('current-task-indicators');
+            const currentTaskTimerBar = document.getElementById('current-task-timer-bar');
+            const currentTaskProgress = document.getElementById('current-task-progress');
+            const emptyRoutineMessage = document.getElementById('empty-routine-message');
+            const routineTable = document.querySelector('.routine-table');
+            const notificationArea = document.getElementById('notification-area');
+            const appContainer = document.querySelector('.app-container'); // Reference for print class toggling
+
+            // Update Modal Elements
+            const updateModal = document.getElementById('update-modal');
+            const modalContent = document.getElementById('modal-content');
+            const updateForm = document.getElementById('update-routine-form');
+            const updateTaskIdInput = document.getElementById('update-task-id');
+            const updateStartTimeInput = document.getElementById('update-start-time');
+            const updateEndTimeInput = document.getElementById('update-end-time');
+            const updateActivitySearchInput = document.getElementById('update-task-activity-search');
+            const updateActivitySuggestionsDiv = document.getElementById('update-activity-suggestions');
+            const updatePriorityInput = document.getElementById('update-task-priority');
+            const updateCategoryInput = document.getElementById('update-task-category');
+            const updateNotesInput = document.getElementById('update-task-notes');
+            const modalCloseButton = document.getElementById('modal-close-button');
+            const modalCancelButton = document.getElementById('modal-cancel-button');
+
+            // AI Summary Elements
+            const aiSummaryButton = document.getElementById('ai-summary-button');
+            const aiSummaryOutput = document.getElementById('ai-summary-output');
+            const aiSpinner = document.getElementById('ai-spinner');
+            const aiIcon = document.getElementById('ai-icon');
+            const aiButtonText = document.getElementById('ai-button-text');
+
+
+            const ROUTINE_STORAGE_KEY = 'dailySmartRoutineV6_1'; // Updated key for V6.1
+
+            // --- Predefined Activity Options (Sorted Alphabetically) ---
+            const activityOptions = [
+                "ICT", "English 1st Paper", "English 2nd Paper", "অ্যাসাইনমেন্ট", "অন্যান্য", "অনলাইন কোর্স", "উচ্চতর গণিত ১ম পত্র", "উচ্চতর গণিত ২য় পত্র",
+                "ইশা নামাজ", "ইয়োগা/মেডিটেশন", "ইবাদত", "কাজের প্রস্তুতি", "কলেজ/ভার্সিটি ক্লাস", "কোচিং/প্রাইভেট", "খাবার", "খেলাধুলা/বিনোদন",
+                "ঘর গোছানো", "ঘুম (দুপুরের)", "ঘুম (রাতের)", "গ্রুপ স্টাডি", "জীববিজ্ঞান ১ম পত্র", "জীববিজ্ঞান ২য় পত্র", "তাহাজ্জুদ নামাজ",
+                "দুআ ও যিকির", "দুপুরের খাবার", "নোট করা", "পরিষ্কার পরিচ্ছন্নতা", "পদার্থবিজ্ঞান ১ম পত্র", "পদার্থবিজ্ঞান ২য় পত্র",
+                "পরীক্ষার প্রস্তুতি", "পারিবারিক সময়", "পানি পান", "প্রোগ্রামিং চর্চা", "ফজর নামাজ ও কুরআন পাঠ", "ফ্রিল্যান্সিং কাজ",
+                "বই পড়া (অন্যান্য)", "বন্ধুদের সাথে আড্ডা", "ব্যায়াম/ওয়ার্কআউট", "বাংলা ১ম পত্র", "বাংলা ২য় পত্র", "বাজার করা",
+                "বিশ্রাম/বিনোদন", "ব্লগিং/লেখালেখি", "ভ্রমণ", "ভাষা শিক্ষা", "মডেল টেস্ট", "মাগরিব নামাজ", "যোহর নামাজ", "রসায়ন ১ম পত্র",
+                "রসায়ন ২য় পত্র", "রাতের খাবার", "রিভিশন", "লেকচার দেখা", "ল্যাব ওয়ার্ক", "লাইব্রেরী ওয়ার্ক", "শিক্ষকের সাথে আলোচনা",
+                "সকালের নাস্তা", "সিনেমা/সিরিজ দেখা", "সোশ্যাল মিডিয়া ব্রাউজিং", "স্কিল ডেভেলপমেন্ট", "হাঁটা/জগিং", "হালকা নাস্তা/বিরতি", "আসর নামাজ", "ব্যক্তিগত কাজ"
+            ].sort((a, b) => a.localeCompare(b, 'bn')); // Sort using Bengali locale
+
+            // --- Category Mapping (with Bengali labels) ---
+            const categoryMap = {
+                study: { label: 'পড়াশোনা', icon: 'fas fa-book-open', colorClass: 'category-study' },
+                prayer: { label: 'ইবাদত', icon: 'fas fa-mosque', colorClass: 'category-prayer' },
+                meal: { label: 'খাবার', icon: 'fas fa-utensils', colorClass: 'category-meal' },
+                break: { label: 'বিশ্রাম/বিনোদন', icon: 'fas fa-couch', colorClass: 'category-break' },
+                personal: { label: 'ব্যক্তিগত', icon: 'fas fa-user', colorClass: 'category-personal' },
+                work: { label: 'কাজ', icon: 'fas fa-briefcase', colorClass: 'category-work' },
+                other: { label: 'অন্যান্য', icon: 'fas fa-ellipsis-h', colorClass: 'category-other' }
+            };
+
+             // --- Priority Mapping (with Bengali labels) ---
+            const priorityMap = {
+                high: { label: 'উচ্চ', colorClass: 'priority-high', sortOrder: 1 },
+                medium: { label: 'মাঝারি', colorClass: 'priority-medium', sortOrder: 2 },
+                low: { label: 'নিম্ন', colorClass: 'priority-low', sortOrder: 3 }
+            };
+
+            // --- Sound Synthesizer (Tone.js) ---
+            let synth = null;
+            let toneJsInitialized = false;
+
+            async function initializeTone() {
+                if (!toneJsInitialized && window.Tone) {
+                    try {
+                        await Tone.start(); // Requires user interaction (like a click)
+                        synth = new Tone.Synth({
+                            oscillator: { type: 'sine' },
+                            envelope: { attack: 0.01, decay: 0.1, sustain: 0.1, release: 0.2 }
+                        }).toDestination();
+                        toneJsInitialized = true;
+                        console.log("Tone.js AudioContext started and Synth initialized.");
+                    } catch (e) {
+                        console.error("Could not start Tone.js AudioContext:", e);
+                        // Optionally show a message to the user to click the screen
+                    }
+                }
+            }
+
+            function playSound(note = 'C5', duration = '16n') {
+                 if (!toneJsInitialized) {
+                     console.warn("Tone.js not initialized. Sound playback skipped. Needs user interaction first.");
+                     // Try initializing again, might work if interaction happened between schedule and now
+                     initializeTone();
+                     return;
+                 }
+                 if (synth && Tone.context.state === 'running') {
+                    try {
+                        synth.triggerAttackRelease(note, duration, Tone.now());
+                    } catch (err) {
+                         console.error("Error playing sound:", err);
+                    }
+                } else {
+                     console.warn("AudioContext not running or synth not ready.");
+                     // Maybe context was suspended again
+                     if (Tone.context.state !== 'running') initializeTone();
+                }
+            }
+
+
+            // --- State ---
+            let routine = loadRoutine();
+            let currentTaskInterval;
+            let userInteracted = false; // Track if user has interacted (for Tone.js)
+
+            // --- Initialization ---
+            displayCurrentDate();
+            renderRoutineTable();
+            setupEventListeners();
+            updateCurrentTaskDisplay(); // Initial call
+            startCurrentTaskUpdater(); // Start interval
+
+
+            // --- Functions ---
+
+            function showNotification(message, type = 'success', duration = 3500) {
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                let iconClass = 'fas fa-check-circle';
+                if (type === 'error') iconClass = 'fas fa-times-circle';
+                if (type === 'warning') iconClass = 'fas fa-exclamation-triangle';
+                notification.innerHTML = `<i class="${iconClass}"></i> <span class="font-bengali font-medium">${message}</span>`;
+                notification.setAttribute('role', 'alert'); // Accessibility
+                notificationArea.appendChild(notification);
+
+                // Force reflow to enable transition
+                void notification.offsetWidth;
+
+                requestAnimationFrame(() => {
+                    notification.classList.add('show');
+                });
+
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    notification.addEventListener('transitionend', () => notification.remove(), { once: true });
+                }, duration);
+            }
+
+            function loadRoutine() {
+                const storedRoutine = localStorage.getItem(ROUTINE_STORAGE_KEY);
+                try {
+                    const parsed = storedRoutine ? JSON.parse(storedRoutine) : [];
+                    // Basic validation: check if it's an array and items have essential properties
+                    if (Array.isArray(parsed) && parsed.every(item => item && typeof item.id === 'string' && item.startTime && item.endTime && item.activity && item.priority && item.category)) {
+                        return parsed;
+                    } else if (storedRoutine) { // If data exists but is invalid
+                        console.warn("Invalid data found in localStorage for key:", ROUTINE_STORAGE_KEY, ". Resetting routine.");
+                        localStorage.removeItem(ROUTINE_STORAGE_KEY); // Clear invalid data
+                        showNotification("রুটিন ডেটা ত্রুটিপূর্ণ ছিল, রিসেট করা হয়েছে।", "warning", 5000);
+                        return [];
+                    } else {
+                         return []; // No data found, return empty array
+                    }
+                } catch (e) {
+                    console.error("Error parsing routine from localStorage:", e);
+                    localStorage.removeItem(ROUTINE_STORAGE_KEY); // Clear potentially corrupted data
+                    showNotification("রুটিন লোড করতে সমস্যা হয়েছে।", "error");
+                    return [];
+                }
+            }
+
+             function sortRoutine(routineArray) {
+                 // Sort primarily by priority (High > Medium > Low), then by start time
+                 routineArray.sort((a, b) => {
+                     const priorityOrderA = priorityMap[a.priority]?.sortOrder ?? 99; // Default to low priority if map missing
+                     const priorityOrderB = priorityMap[b.priority]?.sortOrder ?? 99;
+                     if (priorityOrderA !== priorityOrderB) {
+                         return priorityOrderA - priorityOrderB; // Lower number = higher priority = comes first
+                     }
+                     // If priorities are the same, sort by start time
+                     return a.startTime.localeCompare(b.startTime);
+                 });
+             }
+
+            function saveRoutine() {
+                try {
+                    sortRoutine(routine); // Sort before saving
+                    localStorage.setItem(ROUTINE_STORAGE_KEY, JSON.stringify(routine));
+                } catch (e) {
+                    console.error("Error saving routine to localStorage:", e);
+                    showNotification("রুটিন সেভ করতে সমস্যা হচ্ছে! LocalStorage পূর্ণ হতে পারে।", "error", 5000);
+                }
+            }
+
+            function displayCurrentDate() {
+                const now = new Date();
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                let dateString = '';
+                try {
+                    // Use bn-BD locale for Bengali date format
+                    dateString = now.toLocaleDateString('bn-BD', options);
+                } catch (e) {
+                    console.warn("bn-BD locale not supported or failed. Using default locale.", e);
+                    // Fallback to default locale
+                    dateString = now.toLocaleDateString(undefined, options);
+                }
+                currentDateDisplay.textContent = `আজ: ${dateString}`;
+                printDateDisplay.textContent = dateString; // Set print date as well
+            }
+
+            // Helper function to convert time string (HH:MM) to minutes since midnight
+            function timeToMinutes(timeStr) {
+                if (!timeStr || typeof timeStr !== 'string' || !timeStr.includes(':')) return 0;
+                const [hours, minutes] = timeStr.split(':').map(Number);
+                if (isNaN(hours) || isNaN(minutes)) return 0; // Handle invalid format
+                return hours * 60 + minutes;
+            }
+
+             // Calculates duration between two times (HH:MM), handles overnight tasks
+            function calculateDuration(start, end) {
+                const startMinutes = timeToMinutes(start);
+                let endMinutes = timeToMinutes(end);
+
+                // If end time is earlier than or same as start time, assume it's the next day
+                if (endMinutes <= startMinutes) {
+                    endMinutes += 24 * 60; // Add 24 hours in minutes
+                }
+
+                const diffMinutes = endMinutes - startMinutes;
+
+                if (diffMinutes <= 0) return { totalMinutes: 0, text: "০ মিনিট" };
+
+                const hours = Math.floor(diffMinutes / 60);
+                const minutes = diffMinutes % 60;
+
+                let durationStr = "";
+                if (hours > 0) durationStr += `${toBengaliDigits(hours)} ঘণ্টা `;
+                if (minutes > 0 || hours === 0) durationStr += `${toBengaliDigits(minutes)} মিনিট`; // Show minutes if non-zero, or if hours is zero
+
+                return { totalMinutes: diffMinutes, text: durationStr.trim() };
+            }
+
+             // Formats remaining milliseconds into a readable Bengali string
+            function formatTimeRemaining(diffMillis) {
+                if (diffMillis <= 0) return "সময় শেষ";
+                const totalSeconds = Math.ceil(diffMillis / 1000); // Round up seconds
+
+                const hours = Math.floor(totalSeconds / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const seconds = totalSeconds % 60;
+
+                let remainingStr = "";
+                if (hours > 0) remainingStr += `${toBengaliDigits(hours)} ঘণ্টা `;
+                if (minutes > 0) remainingStr += `${toBengaliDigits(minutes)} মিনিট `;
+                // Only show seconds if less than a minute remaining for better readability
+                if (hours === 0 && minutes === 0 && seconds > 0) {
+                    remainingStr += `${toBengaliDigits(seconds)} সেকেন্ড `;
+                } else if (hours === 0 && minutes < 5) { // Show seconds if less than 5 mins left
+                     remainingStr += `${toBengaliDigits(seconds)} সেকেন্ড `;
+                }
+
+
+                return remainingStr.trim() + " বাকি";
+            }
+
+            // Formats 24-hour time (HH:MM) into a fancy Bengali string with period (সকাল, দুপুর, etc.)
+            function formatTimeBengaliFancy(time24) {
+                 if (!time24 || !time24.includes(':')) return '';
+                 const [hourStr, minuteStr] = time24.split(':');
+                 let hour = parseInt(hourStr, 10);
+                 const minute = parseInt(minuteStr, 10);
+
+                 if (isNaN(hour) || isNaN(minute)) return ''; // Handle parsing errors
+
+                 // Determine period (simplified)
+                 const period = hour < 5 ? 'রাত' // Before 5 AM
+                           : hour < 12 ? 'সকাল' // 5 AM to 11:59 AM
+                           : hour < 17 ? 'দুপুর' // 12 PM to 4:59 PM
+                           : hour < 20 ? 'সন্ধ্যা' // 5 PM to 7:59 PM
+                           : 'রাত'; // 8 PM onwards
+
+                 let displayHour = hour % 12;
+                 if (displayHour === 0) displayHour = 12; // Handle midnight and noon
+
+                 const bengaliHour = toBengaliDigits(displayHour);
+                 const bengaliMinute = toBengaliDigits(minute).padStart(2, toBengaliDigits(0)); // Pad minutes with Bengali zero
+
+                 return `<span class="font-medium">${period} ${bengaliHour}:${bengaliMinute}</span>`; //<span class="text-xs text-gray-500"> (${time24})</span>`; // Removed 24h for cleaner look
+            }
+
+            function renderRoutineTable() {
+                 sortRoutine(routine); // Ensure data is sorted before rendering
+                 routineTableBody.innerHTML = ''; // Clear previous content
+
+                if (routine.length === 0) {
+                    emptyRoutineMessage.style.display = 'block';
+                    routineTable.classList.add('hidden'); // Hide table structure
+                    printButton.disabled = true; // Disable print button
+                    printButton.classList.add('opacity-50', 'cursor-not-allowed');
+                    aiSummaryButton.disabled = true; // Disable AI button
+                    aiSummaryButton.classList.add('opacity-50', 'cursor-not-allowed');
+                } else {
+                    emptyRoutineMessage.style.display = 'none';
+                    routineTable.classList.remove('hidden'); // Show table structure
+                    printButton.disabled = false;
+                    printButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                    aiSummaryButton.disabled = false;
+                    aiSummaryButton.classList.remove('opacity-50', 'cursor-not-allowed');
+
+                    routine.forEach(task => {
+                        const row = document.createElement('tr');
+                        row.setAttribute('data-id', task.id);
+                        row.className = 'hover:bg-purple-50/50 transition duration-150';
+
+                        const duration = calculateDuration(task.startTime, task.endTime);
+                        const categoryInfo = categoryMap[task.category] || categoryMap.other;
+                        const priorityInfo = priorityMap[task.priority] || priorityMap.medium;
+
+                        // Text for print (Priority and Category)
+                        const printExtraText = `(${priorityInfo.label}, ${categoryInfo.label})`;
+
+                        row.innerHTML = `
+                            <td class="px-4 py-2.5 whitespace-nowrap text-sm text-gray-700 font-bengali">${formatTimeBengaliFancy(task.startTime)} - ${formatTimeBengaliFancy(task.endTime)}</td>
+                            <td class="px-4 py-2.5 whitespace-nowrap text-sm text-gray-600 font-bengali">${duration.text}</td>
+                            <td class="px-4 py-2.5 text-sm text-gray-900 font-medium font-bengali">
+                                <span class="priority-dot ${priorityInfo.colorClass}" title="অগ্রাধিকার: ${priorityInfo.label}"></span>
+                                <span class="${categoryInfo.colorClass} category-badge mr-1.5" title="বিভাগ: ${categoryInfo.label}">
+                                    <i class="${categoryInfo.icon} text-xs"></i>
+                                    <span class="hidden sm:inline">${categoryInfo.label}</span> <!-- Hide label on small screens -->
+                                </span>
+                                ${escapeHtml(task.activity)}
+                                <span class="print-only print-priority-category-text">${printExtraText}</span> <!-- Print-only text -->
+                            </td>
+                            <td class="px-4 py-2.5 text-sm text-gray-500 max-w-xs truncate font-bengali" title="${escapeHtml(task.notes || '')}">${escapeHtml(task.notes || '-')}</td>
+                            <td class="px-4 py-2.5 whitespace-nowrap text-right text-sm font-medium no-print">
+                                <div class="flex items-center justify-start gap-1.5">
+                                    <button class="btn-update text-blue-500 hover:text-blue-700 transition duration-200 p-1.5 rounded-md hover:bg-blue-100" data-id="${task.id}" title="আপডেট করুন" aria-label="কাজ আপডেট করুন: ${escapeHtml(task.activity)}">
+                                        <i class="fas fa-pencil-alt fa-fw"></i>
+                                    </button>
+                                    <button class="btn-delete text-red-500 hover:text-red-700 transition duration-200 p-1.5 rounded-md hover:bg-red-100" data-id="${task.id}" title="মুছে ফেলুন" aria-label="কাজ মুছে ফেলুন: ${escapeHtml(task.activity)}">
+                                        <i class="fas fa-trash-alt fa-fw"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        `;
+
+                         // Apply animation only if the task has the 'isNew' flag
+                        if (task.isNew) {
+                            row.classList.add('new-task-animation');
+                            // Remove the flag after applying the animation class so it doesn't re-animate on next render
+                            delete task.isNew;
+                        }
+
+                        routineTableBody.appendChild(row);
+                    });
+                }
+            }
+
+            // Simple HTML escaping function
+            function escapeHtml(unsafe) {
+                if (typeof unsafe !== 'string') return unsafe; // Return non-strings as is
+                return unsafe
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+
+            function startCurrentTaskUpdater() {
+                // Clear existing interval if any
+                if (currentTaskInterval) clearInterval(currentTaskInterval);
+                 // Run immediately first time
+                 updateCurrentTaskDisplay();
+                // Then set interval to run every second
+                currentTaskInterval = setInterval(updateCurrentTaskDisplay, 1000);
+            }
+
+            function stopCurrentTaskUpdater() {
+                 if (currentTaskInterval) clearInterval(currentTaskInterval);
+                 currentTaskInterval = null;
+            }
+
+            function updateCurrentTaskDisplay() {
+                const now = new Date();
+                const currentHour = now.getHours();
+                const currentMinute = now.getMinutes();
+                const currentTimeMinutes = currentHour * 60 + currentMinute;
+
+                let currentTask = null;
+                let nextTask = null;
+
+                 // Find the current task
+                for (const task of routine) { // Use the already sorted routine
+                    const taskStartMinutes = timeToMinutes(task.startTime);
+                    let taskEndMinutes = timeToMinutes(task.endTime);
+                    let isOvernight = false;
+
+                    if (taskEndMinutes <= taskStartMinutes) { // Handles tasks ending at or before start time (implies next day)
+                        taskEndMinutes += 24 * 60;
+                        isOvernight = true;
+                    }
+
+                    // Check if current time falls within the task's duration
+                    if (isOvernight) {
+                        // Overnight task: current time is after start OR before end (on the next day)
+                        if (currentTimeMinutes >= taskStartMinutes || currentTimeMinutes < (taskEndMinutes - 24 * 60)) {
+                            currentTask = task;
+                            break; // Found the current task
+                        }
+                    } else {
+                        // Same-day task: current time is between start and end
+                        if (currentTimeMinutes >= taskStartMinutes && currentTimeMinutes < taskEndMinutes) {
+                            currentTask = task;
+                            break; // Found the current task
+                        }
+                    }
+                }
+
+
+                 // Find the next task (only if no current task is active or to show what's upcoming)
+                 // Iterate through the sorted routine to find the first task starting after the current time
+                 for (const task of routine) {
+                     const taskStartMinutes = timeToMinutes(task.startTime);
+                     if (taskStartMinutes > currentTimeMinutes) {
+                         // This is a potential next task
+                         // If we haven't found a next task yet, or this one starts earlier than the previously found next task
+                         if (!nextTask || taskStartMinutes < timeToMinutes(nextTask.startTime)) {
+                              nextTask = task;
+                              // Since the list is sorted by time (within priority), the first one we find > currentTime is the next one
+                              break;
+                         }
+                     }
+                 }
+                 // If no task starts after current time today, check if the first task of the routine is tomorrow (wrap around)
+                 if (!nextTask && routine.length > 0) {
+                     const firstTaskStartMinutes = timeToMinutes(routine[0].startTime);
+                      // Check if the first task's start time is earlier than the current time (meaning it's for the next day)
+                     if (firstTaskStartMinutes < currentTimeMinutes) {
+                          // Optionally: Decide if you want to show the next day's first task. Here we will.
+                          // nextTask = routine[0]; // We don't set it here based on the current logic focus: show *immediately* next task
+                     } else if (firstTaskStartMinutes > currentTimeMinutes) {
+                          // This handles the case where the first task is later today, and wasn't picked above
+                           nextTask = routine[0];
+                     }
+                 }
+
+
+                // --- Update DOM based on current/next task ---
+                currentTaskCard.classList.remove('current-task-pulse-anim'); // Remove previous pulse
+                void currentTaskCard.offsetWidth; // Trigger reflow for animation restart
+
+                currentTaskIndicators.innerHTML = ''; // Clear previous indicators
+
+                if (currentTask) {
+                    const duration = calculateDuration(currentTask.startTime, currentTask.endTime);
+                    const categoryInfo = categoryMap[currentTask.category] || categoryMap.other;
+                    const priorityInfo = priorityMap[currentTask.priority] || priorityMap.medium;
+
+                    // Calculate time remaining & progress (handle overnight correctly)
+                    const taskStartDateTime = new Date(now);
+                    taskStartDateTime.setHours(...currentTask.startTime.split(':').map(Number), 0, 0);
+
+                    const taskEndDateTime = new Date(now);
+                    taskEndDateTime.setHours(...currentTask.endTime.split(':').map(Number), 0, 0);
+
+                    // Adjust dates for overnight tasks relative to 'now'
+                    if (taskEndDateTime <= taskStartDateTime) { // If end time is on or before start time (e.g., 22:00 - 06:00)
+                       // If current time is after midnight but before end time
+                       if (now < taskEndDateTime) {
+                           taskStartDateTime.setDate(taskStartDateTime.getDate() - 1); // Start was yesterday
+                       } else { // Current time is after start time but before midnight
+                           taskEndDateTime.setDate(taskEndDateTime.getDate() + 1); // End is tomorrow
+                       }
+                    } else {
+                         // Handle edge case where task is 00:00 to 01:00 and now is 23:59
+                         if (taskStartDateTime > now && taskEndDateTime > now && taskStartDateTime > taskEndDateTime) {
+                              // This shouldn't happen with the above check but as safety
+                              taskStartDateTime.setDate(taskStartDateTime.getDate() -1);
+                         }
+                    }
+
+
+                    const totalDurationMillis = Math.max(1, taskEndDateTime - taskStartDateTime); // Avoid division by zero
+                    const timeRemainingMillis = Math.max(0, taskEndDateTime - now);
+                    const timeElapsedMillis = totalDurationMillis - timeRemainingMillis;
+                    const progressPercentage = Math.min(100, (timeElapsedMillis / totalDurationMillis) * 100);
+
+                    // Update Task Info Area
+                    currentTaskInfo.innerHTML = `<i class="${categoryInfo.icon} mr-2 text-teal-600"></i> ${escapeHtml(currentTask.activity)}`;
+                    currentTaskDetails.innerHTML = `
+                        <div class="flex items-center gap-2 text-xs flex-wrap">
+                            <i class="fas fa-clock fa-fw text-teal-500"></i>
+                            <span>${formatTimeBengaliFancy(currentTask.startTime)} - ${formatTimeBengaliFancy(currentTask.endTime)}</span>
+                            <span class="mx-1 text-gray-400 hidden sm:inline">|</span>
+                            <i class="fas fa-hourglass-half fa-fw text-teal-500"></i>
+                            <span>মোট: ${duration.text}</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs font-medium text-teal-600 mt-1">
+                            <i class="fas fa-stopwatch fa-fw"></i>
+                            <span>${formatTimeRemaining(timeRemainingMillis)}</span>
+                        </div>
+                        ${currentTask.notes ? `<div class="flex items-start gap-2 mt-1.5 pt-1.5 border-t border-teal-200/60 text-xs"><i class="fas fa-info-circle fa-fw text-teal-500 mt-0.5"></i><span class="break-words">${escapeHtml(currentTask.notes)}</span></div>` : ''}
+                    `;
+
+                    // Add indicators (Priority Dot & Category Badge)
+                    currentTaskIndicators.innerHTML = `
+                        <span class="priority-dot ${priorityInfo.colorClass}" title="অগ্রাধিকার: ${priorityInfo.label}"></span>
+                        <span class="${categoryInfo.colorClass} category-badge" title="বিভাগ: ${categoryInfo.label}">
+                            <i class="${categoryInfo.icon} text-xs"></i>
+                            <span class="hidden sm:inline">${categoryInfo.label}</span>
+                        </span>
+                    `;
+
+                    currentTaskProgress.style.width = `${progressPercentage}%`;
+                    currentTaskTimerBar.style.display = 'block';
+                    currentTaskCard.classList.add('current-task-pulse-anim'); // Add pulse effect
+
+                } else if (nextTask) {
+                     const categoryInfo = categoryMap[nextTask.category] || categoryMap.other;
+                     const priorityInfo = priorityMap[nextTask.priority] || priorityMap.medium;
+
+                     const taskStartDateTime = new Date(now);
+                     taskStartDateTime.setHours(...nextTask.startTime.split(':').map(Number), 0, 0);
+
+                      // If the next task's start time is earlier today than now, it must be for tomorrow
+                     if (taskStartDateTime < now) {
+                         taskStartDateTime.setDate(taskStartDateTime.getDate() + 1);
+                     }
+
+                     const timeUntilStartMillis = Math.max(0, taskStartDateTime - now);
+
+                    currentTaskInfo.innerHTML = `<i class="fas fa-forward mr-2 text-indigo-600"></i> পরবর্তী: ${escapeHtml(nextTask.activity)}`;
+                    currentTaskDetails.innerHTML = `
+                        <div class="flex items-center gap-2 text-xs flex-wrap">
+                            <i class="fas fa-hourglass-start fa-fw text-indigo-500"></i>
+                            <span>শুরু হবে: ${formatTimeBengaliFancy(nextTask.startTime)} (${formatTimeRemaining(timeUntilStartMillis).replace('বাকি', 'পর')})</span>
+                        </div>
+                         ${nextTask.notes ? `<div class="flex items-start gap-2 mt-1.5 pt-1.5 border-t border-indigo-200/60 text-xs"><i class="fas fa-info-circle fa-fw text-indigo-500 mt-0.5"></i><span class="break-words">${escapeHtml(nextTask.notes)}</span></div>` : ''}
+                    `;
+                     // Add indicators for next task
+                     currentTaskIndicators.innerHTML = `
+                        <span class="priority-dot ${priorityInfo.colorClass}" title="অগ্রাধিকার: ${priorityInfo.label}"></span>
+                        <span class="${categoryInfo.colorClass} category-badge" title="বিভাগ: ${categoryInfo.label}">
+                            <i class="${categoryInfo.icon} text-xs"></i>
+                            <span class="hidden sm:inline">${categoryInfo.label}</span>
+                        </span>
+                    `;
+                    currentTaskTimerBar.style.display = 'none'; // Hide progress bar for next task
+                } else {
+                    // No current or upcoming task found
+                    currentTaskInfo.innerHTML = `<i class="fas fa-coffee mr-2 text-gray-600"></i> এখন কোনো নির্ধারিত কাজ নেই`;
+                    currentTaskDetails.innerHTML = `
+                        <div class="flex items-center gap-2 text-xs text-gray-500">
+                            <i class="fas fa-plus-circle fa-fw"></i>
+                            <span>নতুন কাজ যোগ করুন অথবা বিশ্রাম নিন!</span>
+                        </div>
+                    `;
+                    currentTaskTimerBar.style.display = 'none'; // Hide progress bar
+                }
+            }
+
+
+            // Converts numbers in a string to Bengali digits
+            function toBengaliDigits(num) {
+                if (num === null || num === undefined) return ''; // Handle null/undefined input
+                const numStr = String(num); // Convert input to string
+                const bengaliDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+                return numStr.replace(/[0-9]/g, (digit) => bengaliDigits[parseInt(digit)]);
+            }
+
+            // Sets up the searchable input with suggestions dropdown
+             function setupSearchableInput(inputElement, suggestionsElement) {
+                 inputElement.addEventListener('input', () => filterAndShowSuggestions(inputElement.value, inputElement, suggestionsElement));
+                 inputElement.addEventListener('focus', () => filterAndShowSuggestions(inputElement.value, inputElement, suggestionsElement));
+                 // Close suggestions when clicking outside
+                 document.addEventListener('click', (e) => {
+                     if (!inputElement.contains(e.target) && !suggestionsElement.contains(e.target)) {
+                         suggestionsElement.classList.add('hidden');
+                     }
+                 });
+                 // Keyboard navigation for suggestions
+                 inputElement.addEventListener('keydown', (e) => handleSuggestionNav(e, inputElement, suggestionsElement));
+            }
+
+             // Filters activityOptions based on query and displays them
+            function filterAndShowSuggestions(query, inputElement, suggestionsElement) {
+                const lowerCaseQuery = query.trim().toLowerCase();
+                suggestionsElement.innerHTML = ''; // Clear previous suggestions
+
+                 // Filter options: check if the Bengali option includes the query
+                const filteredOptions = activityOptions.filter(option =>
+                     option.toLowerCase().includes(lowerCaseQuery)
+                 );
+
+                if (filteredOptions.length > 0 && query.length > 0) { // Show only if query exists and results found
+                    filteredOptions.slice(0, 7).forEach(option => { // Limit to 7 suggestions
+                        const item = document.createElement('div');
+                        // Highlight matching part (case-insensitive)
+                        const regex = new RegExp(`(${escapeRegExp(lowerCaseQuery)})`, 'ig');
+                        const highlightedOption = escapeHtml(option).replace(regex, '<mark class="bg-yellow-200/70 px-0 rounded font-semibold">$1</mark>');
+
+                        item.innerHTML = highlightedOption;
+                        item.className = 'suggestion-item px-3 py-1.5 cursor-pointer hover:bg-purple-100 transition duration-150 text-sm text-gray-700 font-bengali';
+                        item.setAttribute('role', 'option');
+                        item.tabIndex = -1; // Make it focusable via keyboard navigation later
+                        item.dataset.value = option; // Store original value
+
+                        item.addEventListener('click', () => {
+                            inputElement.value = item.dataset.value; // Set input value
+                            suggestionsElement.classList.add('hidden'); // Hide suggestions
+                            inputElement.focus(); // Keep focus on input or move to next field
+                        });
+                        suggestionsElement.appendChild(item);
+                    });
+                    suggestionsElement.classList.remove('hidden'); // Show suggestions list
+                } else {
+                    suggestionsElement.classList.add('hidden'); // Hide if no results or empty query
+                }
+            }
+
+            // Escapes special characters for use in RegExp
+            function escapeRegExp(string) {
+              return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+            }
+
+
+             // Handles keyboard navigation (Up, Down, Enter, Escape) in suggestions list
+             function handleSuggestionNav(e, inputElement, suggestionsElement) {
+                const items = suggestionsElement.querySelectorAll('.suggestion-item');
+                if (items.length === 0 || suggestionsElement.classList.contains('hidden')) return;
+
+                let currentFocusIndex = -1;
+                items.forEach((item, index) => {
+                    if (item.classList.contains('bg-purple-100')) {
+                        currentFocusIndex = index;
+                    }
+                    item.classList.remove('bg-purple-100'); // Always remove highlight first
+                });
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault(); // Prevent cursor move in input
+                    currentFocusIndex = (currentFocusIndex + 1) % items.length;
+                } else if (e.key === 'ArrowUp') {
+                     e.preventDefault(); // Prevent cursor move in input
+                    currentFocusIndex = (currentFocusIndex - 1 + items.length) % items.length;
+                } else if (e.key === 'Enter' && currentFocusIndex > -1) {
+                    e.preventDefault(); // Prevent form submission
+                    items[currentFocusIndex].click(); // Simulate click on the selected item
+                    return;
+                } else if (e.key === 'Escape') {
+                    suggestionsElement.classList.add('hidden');
+                    return;
+                } else {
+                    return; // Ignore other keys for navigation
+                }
+
+                if (currentFocusIndex > -1) {
+                     items[currentFocusIndex].classList.add('bg-purple-100'); // Highlight the new item
+                     // Optional: Scroll into view if needed
+                     items[currentFocusIndex].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                 }
+            }
+
+
+            function setupEventListeners() {
+                // Add task form
+                routineForm.addEventListener('submit', handleAddTask);
+
+                // Actions within the routine table (Edit, Delete)
+                routineTableBody.addEventListener('click', handleTableActions);
+
+                // Searchable inputs setup
+                setupSearchableInput(taskActivitySearchInput, activitySuggestionsDiv);
+                setupSearchableInput(updateActivitySearchInput, updateActivitySuggestionsDiv);
+
+                // Update task form
+                updateForm.addEventListener('submit', handleUpdateTask);
+
+                // Modal close/cancel buttons
+                modalCloseButton.addEventListener('click', closeUpdateModal);
+                modalCancelButton.addEventListener('click', closeUpdateModal);
+                // Close modal if clicking outside the content area
+                updateModal.addEventListener('click', (e) => {
+                    if (e.target === updateModal) {
+                        closeUpdateModal();
+                    }
+                });
+
+                // AI Summary button
+                aiSummaryButton.addEventListener('click', handleGenerateAiSummary);
+
+                // Print button
+                printButton.addEventListener('click', handlePrint);
+
+                 // Handle visibility change to stop/start timer updates
+                 document.addEventListener('visibilitychange', () => {
+                    if (document.hidden) {
+                        stopCurrentTaskUpdater();
+                    } else {
+                         startCurrentTaskUpdater();
+                     }
+                 });
+
+                 // --- Tone.js Initialization on User Interaction ---
+                 // We need a user gesture (like click, keydown) to start the AudioContext.
+                 // We'll try to initialize it when the user first interacts with the page.
+                 const interactionEvents = ['click', 'keydown', 'touchstart'];
+                 const interactionListener = () => {
+                     if (!userInteracted) {
+                        userInteracted = true;
+                        initializeTone(); // Attempt to start Tone.js
+                        // Remove listeners once triggered
+                        interactionEvents.forEach(event => document.body.removeEventListener(event, interactionListener));
+                        console.log("User interaction detected, attempting Tone.js initialization.");
+                     }
+                 };
+                 interactionEvents.forEach(event => document.body.addEventListener(event, interactionListener, { once: true }));
+
+                 // Input validation for time fields
+                 taskEndTimeInput.addEventListener('change', () => validateTimeOrder(taskStartTimeInput, taskEndTimeInput));
+                 updateEndTimeInput.addEventListener('change', () => validateTimeOrder(updateStartTimeInput, updateEndTimeInput));
+            }
+
+            function validateTimeOrder(startInput, endInput) {
+                const startTime = startInput.value;
+                const endTime = endInput.value;
+                if (startTime && endTime) {
+                    const duration = calculateDuration(startTime, endTime);
+                    if (duration.totalMinutes <= 0) {
+                        showNotification("শেষের সময় অবশ্যই শুরুর সময়ের পরে হতে হবে।", "warning");
+                        endInput.classList.add('border-red-500'); // Highlight error
+                         // endInput.value = ''; // Optionally clear the invalid input
+                    } else {
+                        endInput.classList.remove('border-red-500'); // Remove error highlight
+                    }
+                } else {
+                     endInput.classList.remove('border-red-500'); // Clear error if one is empty
+                }
+            }
+
+            function handleAddTask(e) {
+                e.preventDefault();
+                 if (!userInteracted) { // Remind user if interaction needed for sound
+                     console.warn("Attempting to add task before user interaction - sound might not play.");
+                 }
+
+                const startTime = taskStartTimeInput.value;
+                const endTime = taskEndTimeInput.value;
+                const activity = taskActivitySearchInput.value.trim();
+                const priority = taskPriorityInput.value;
+                const category = taskCategoryInput.value;
+                const notes = taskNotesInput.value.trim();
+
+                // --- Validation ---
+                if (!startTime || !endTime || !activity) {
+                    showNotification("অনুগ্রহ করে সময় এবং কাজ/বিষয় পূরণ করুন।", "warning");
+                    // Highlight missing fields (optional)
+                    if (!startTime) taskStartTimeInput.focus();
+                    else if (!endTime) taskEndTimeInput.focus();
+                    else taskActivitySearchInput.focus();
+                    return;
+                }
+                 // Check if end time is after start time (handles overnight)
+                 const durationCheck = calculateDuration(startTime, endTime);
+                 if (durationCheck.totalMinutes <= 0) {
+                    showNotification("শেষের সময় অবশ্যই শুরুর সময়ের পরে হতে হবে।", "warning");
+                    taskEndTimeInput.focus();
+                    taskEndTimeInput.classList.add('border-red-500');
+                    return;
+                 } else {
+                     taskEndTimeInput.classList.remove('border-red-500');
+                 }
+
+                 // Check for time overlap with existing tasks
+                 if (hasTimeOverlap({ id: null, startTime, endTime })) {
+                     showNotification("এই সময়ে অন্য একটি কাজ নির্ধারিত আছে। অনুগ্রহ করে সময় পরিবর্তন করুন।", "warning");
+                     taskStartTimeInput.focus(); // Focus on start time for adjustment
+                     return;
+                 }
+                 // --- End Validation ---
+
+
+                const newTask = {
+                    id: Date.now().toString() + Math.random().toString(36).substring(2, 7), // More unique ID
+                    startTime, endTime, activity, priority, category, notes,
+                    isNew: true // Flag for animation
+                };
+
+                routine.push(newTask);
+                saveRoutine(); // Save and sort
+                renderRoutineTable();
+                updateCurrentTaskDisplay(); // Refresh current task view
+                showNotification("কাজ সফলভাবে যোগ করা হয়েছে!", "success");
+                playSound('E5', '8n'); // Play confirmation sound
+
+                // Reset the form for the next entry
+                routineForm.reset();
+                taskActivitySearchInput.value = ''; // Explicitly clear search input
+                activitySuggestionsDiv.classList.add('hidden'); // Hide suggestions
+                taskStartTimeInput.focus(); // Focus back on the start time input
+            }
+
+             // Checks if a new/updated task overlaps with any existing tasks
+             function hasTimeOverlap(taskToCheck) {
+                const newStart = timeToMinutes(taskToCheck.startTime);
+                let newEnd = timeToMinutes(taskToCheck.endTime);
+                // Handle overnight for the task being checked
+                if (newEnd <= newStart) newEnd += 24 * 60;
+
+                for (const existingTask of routine) {
+                    // Skip checking against itself if it's an update (taskToCheck.id is provided)
+                    if (taskToCheck.id && existingTask.id === taskToCheck.id) {
+                        continue;
+                    }
+
+                    const existingStart = timeToMinutes(existingTask.startTime);
+                    let existingEnd = timeToMinutes(existingTask.endTime);
+                     // Handle overnight for the existing task
+                    if (existingEnd <= existingStart) existingEnd += 24 * 60;
+
+                    // Overlap condition:
+                    // New task starts before existing ends AND New task ends after existing starts
+                    if (newStart < existingEnd && newEnd > existingStart) {
+                        console.warn("Overlap detected:", taskToCheck, "overlaps with", existingTask);
+                        return true; // Overlap found
+                    }
+                }
+                return false; // No overlap found
+            }
+
+            function handleTableActions(e) {
+                const target = e.target;
+                const updateButton = target.closest('.btn-update');
+                const deleteButton = target.closest('.btn-delete');
+
+                if (updateButton) {
+                    const taskId = updateButton.dataset.id;
+                    openUpdateModal(taskId);
+                } else if (deleteButton) {
+                    const taskId = deleteButton.dataset.id;
+                    const taskRow = deleteButton.closest('tr'); // Get the table row element
+                    handleDeleteTask(taskId, taskRow);
+                }
+            }
+
+            function handleDeleteTask(taskId, taskRow) {
+                 // Find the task data to get the activity name for confirmation
+                 const taskToDelete = routine.find(task => task.id === taskId);
+                 const taskActivity = taskToDelete ? `"${escapeHtml(taskToDelete.activity)}"` : "এই"; // Get activity name or default text
+
+                // Show confirmation dialog
+                if (confirm(`আপনি কি ${taskActivity} কাজটি তালিকা থেকে মুছে ফেলতে নিশ্চিত?`)) {
+                    // Animate row removal
+                    taskRow.style.transition = 'opacity 0.4s ease-out, transform 0.4s ease-out';
+                    taskRow.style.opacity = '0';
+                    taskRow.style.transform = 'translateX(-30px)'; // Slide out effect
+
+                    // Remove the task after animation
+                    setTimeout(() => {
+                        routine = routine.filter(task => task.id !== taskId);
+                        saveRoutine(); // Save the updated routine (without the deleted task)
+                        renderRoutineTable(); // Re-render the table
+                        updateCurrentTaskDisplay(); // Update the current task display
+                        showNotification("কাজটি সফলভাবে মুছে ফেলা হয়েছে।", "success");
+                         playSound('C4', '8n'); // Play deletion sound
+                    }, 400); // Duration should match the CSS transition duration
+                }
+            }
+
+            function openUpdateModal(taskId) {
+                const taskToUpdate = routine.find(task => task.id === taskId);
+                if (!taskToUpdate) {
+                     showNotification("আপডেট করার জন্য কাজটি খুঁজে পাওয়া যায়নি!", "error");
+                     console.error("Task not found for update:", taskId);
+                     return;
+                }
+
+                // Populate the modal form with the task's current data
+                updateTaskIdInput.value = taskToUpdate.id;
+                updateStartTimeInput.value = taskToUpdate.startTime;
+                updateEndTimeInput.value = taskToUpdate.endTime;
+                updateActivitySearchInput.value = taskToUpdate.activity;
+                updatePriorityInput.value = taskToUpdate.priority;
+                updateCategoryInput.value = taskToUpdate.category;
+                updateNotesInput.value = taskToUpdate.notes || '';
+                updateActivitySearchInput.classList.remove('border-red-500'); // Clear previous errors if any
+                updateEndTimeInput.classList.remove('border-red-500');
+
+                // Show the modal with transition
+                updateModal.classList.remove('hidden');
+                 // Need a slight delay for the CSS transition to catch the class change
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => { // Double requestAnimationFrame for robustness
+                        modalContent.style.transform = 'scale(1) translateY(0)';
+                        modalContent.style.opacity = '1';
+                    });
+                });
+
+                document.body.style.overflow = 'hidden'; // Prevent background scrolling
+                updateStartTimeInput.focus(); // Focus the first editable field
+            }
+
+            function closeUpdateModal() {
+                 // Apply closing transition styles
+                 modalContent.style.transform = 'scale(0.95) translateY(-20px)';
+                 modalContent.style.opacity = '0';
+
+                 // Wait for transition to finish before hiding the modal completely
+                 setTimeout(() => {
+                    updateModal.classList.add('hidden');
+                    document.body.style.overflow = ''; // Restore background scrolling
+                    updateActivitySuggestionsDiv.classList.add('hidden'); // Hide suggestions in modal
+                     updateForm.reset(); // Optional: reset form fields on close
+                 }, 300); // Match the transition duration in CSS (.3s)
+            }
+
+            function handleUpdateTask(e) {
+                e.preventDefault();
+
+                const id = updateTaskIdInput.value;
+                const startTime = updateStartTimeInput.value;
+                const endTime = updateEndTimeInput.value;
+                const activity = updateActivitySearchInput.value.trim();
+                const priority = updatePriorityInput.value;
+                const category = updateCategoryInput.value;
+                const notes = updateNotesInput.value.trim();
+
+                 // --- Validation ---
+                if (!startTime || !endTime || !activity) {
+                    showNotification("অনুগ্রহ করে সময় এবং কাজ/বিষয় পূরণ করুন।", "warning"); return;
+                }
+                 // Check time order
+                 const durationCheck = calculateDuration(startTime, endTime);
+                 if (durationCheck.totalMinutes <= 0) {
+                    showNotification("শেষের সময় অবশ্যই শুরুর সময়ের পরে হতে হবে।", "warning");
+                    updateEndTimeInput.focus();
+                    updateEndTimeInput.classList.add('border-red-500');
+                    return;
+                 } else {
+                     updateEndTimeInput.classList.remove('border-red-500');
+                 }
+                 // Check for overlap, excluding the task itself
+                 if (hasTimeOverlap({ id, startTime, endTime })) {
+                     showNotification("এই সময়ে অন্য একটি কাজ নির্ধারিত আছে। অনুগ্রহ করে সময় পরিবর্তন করুন।", "warning");
+                     updateStartTimeInput.focus();
+                     return;
+                 }
+                 // --- End Validation ---
+
+
+                const taskIndex = routine.findIndex(task => task.id === id);
+                if (taskIndex > -1) {
+                    // Update the task in the routine array
+                    routine[taskIndex] = { ...routine[taskIndex], startTime, endTime, activity, priority, category, notes };
+                    // Mark as updated (optional, if you want different feedback/animation)
+                    // routine[taskIndex].isUpdated = true;
+
+                    saveRoutine(); // Save the updated & sorted routine
+                    renderRoutineTable(); // Re-render the table
+                    updateCurrentTaskDisplay(); // Refresh current task display
+                    closeUpdateModal(); // Close the modal
+                    showNotification("কাজটি সফলভাবে আপডেট করা হয়েছে!", "success");
+                     playSound('G5', '8n'); // Play update confirmation sound
+                } else {
+                     showNotification("ত্রুটি: আপডেট করার সময় কাজটি খুঁজে পাওয়া যায়নি।", "error");
+                     console.error("Task to update not found in routine array:", id);
+                }
+            }
+
+            function handleGenerateAiSummary() {
+                aiSummaryOutput.innerHTML = `<p class="flex items-center gap-2 text-indigo-600"><i class="fas fa-spinner fa-spin"></i> <span class="font-bengali">আপনার দিনের রুটিন বিশ্লেষণ করা হচ্ছে...</span></p>`;
+                aiSummaryOutput.style.display = 'block'; // Show the output area
+                aiSummaryButton.disabled = true; // Disable button during processing
+                aiSpinner.classList.remove('hidden'); // Show spinner
+                aiIcon.classList.add('hidden'); // Hide magic icon
+                aiButtonText.textContent = 'লোড হচ্ছে...';
+
+                // Simulate AI processing delay (replace with actual AI call if available)
+                setTimeout(() => {
+                    if (routine.length === 0) {
+                        aiSummaryOutput.innerHTML = '<p class="font-bengali italic text-gray-500"><i class="fas fa-info-circle mr-1"></i> সারসংক্ষেপ তৈরির জন্য প্রথমে কিছু কাজ যোগ করুন।</p>';
+                    } else {
+                        let summaryLines = [];
+                        summaryLines.push(`<h4 class="text-base font-semibold text-indigo-700 mb-2 flex items-center gap-2 font-bengali"><i class="fas fa-chart-pie"></i> দিনের পরিসংখ্যান:</h4>`);
+
+                        let categoryTime = {};
+                        let priorityCounts = { high: 0, medium: 0, low: 0 };
+                        let totalDurationMinutes = 0;
+                        let studyTime = 0;
+                        let breakTime = 0;
+                        let prayerTime = 0;
+
+                        routine.forEach(task => {
+                            const duration = calculateDuration(task.startTime, task.endTime).totalMinutes;
+                            totalDurationMinutes += duration;
+                            priorityCounts[task.priority]++;
+                            const categoryLabel = categoryMap[task.category]?.label || 'অন্যান্য';
+                            categoryTime[categoryLabel] = (categoryTime[categoryLabel] || 0) + duration;
+
+                            // Track specific categories for suggestions
+                            if (task.category === 'study') studyTime += duration;
+                            if (task.category === 'break') breakTime += duration;
+                            if (task.category === 'prayer') prayerTime += duration;
+                        });
+
+                        const totalDurationFormatted = calculateDuration('00:00', `00:${totalDurationMinutes}`).text; // Use helper for formatting
+                        summaryLines.push(`<p class="font-bengali text-sm">📅 মোট <strong class="text-indigo-800">${toBengaliDigits(routine.length)}</strong> টি কাজ নির্ধারিত।</p>`);
+                        summaryLines.push(`<p class="font-bengali text-sm">⏱️ সর্বমোট সময়কাল: <strong class="text-indigo-800">${totalDurationFormatted}</strong>।</p>`);
+
+
+                        // Category Breakdown
+                        summaryLines.push(`<div class="mt-3 pt-2 border-t border-indigo-100/70"><strong class="text-sm font-medium text-blue-700 font-bengali block mb-1">বিভাগ অনুযায়ী সময় বন্টন:</strong><ul class="list-none pl-0 text-xs space-y-1 font-bengali">`);
+                        Object.entries(categoryTime)
+                              .filter(([, minutes]) => minutes > 0) // Only show categories with time > 0
+                              .sort(([, a], [, b]) => b - a) // Sort by time spent (descending)
+                              .forEach(([category, minutes]) => {
+                                    const catDuration = calculateDuration('00:00', `00:${minutes}`).text;
+                                    const percentage = totalDurationMinutes > 0 ? ((minutes / totalDurationMinutes) * 100).toFixed(0) : 0;
+                                    const icon = Object.values(categoryMap).find(c => c.label === category)?.icon || 'fa-tag'; // Find icon
+                                    summaryLines.push(`<li class="flex items-center justify-between"><span class="flex items-center gap-1.5"><i class="fa-fw ${icon} text-blue-500"></i>${category}:</span> <span class="font-medium">${catDuration} (${toBengaliDigits(percentage)}%)</span></li>`);
+                              });
+                        summaryLines.push(`</ul></div>`);
+
+                         // Priority Breakdown
+                         const highPriorityText = priorityCounts.high > 0 ? `<strong class="text-red-600">${toBengaliDigits(priorityCounts.high)}</strong>` : toBengaliDigits(0);
+                         const mediumPriorityText = priorityCounts.medium > 0 ? `<strong class="text-amber-600">${toBengaliDigits(priorityCounts.medium)}</strong>` : toBengaliDigits(0);
+                         const lowPriorityText = priorityCounts.low > 0 ? `<strong class="text-green-600">${toBengaliDigits(priorityCounts.low)}</strong>` : toBengaliDigits(0);
+                         summaryLines.push(`<div class="mt-3 pt-2 border-t border-indigo-100/70"><strong class="text-sm font-medium text-purple-700 font-bengali block mb-1">অগ্রাধিকার অনুযায়ী কাজের সংখ্যা:</strong><p class="text-xs font-bengali flex justify-around gap-2"><span>উচ্চ: ${highPriorityText}</span> <span>মাঝারি: ${mediumPriorityText}</span> <span>নিম্ন: ${lowPriorityText}</span></p></div>`);
+
+
+                        // Simple Suggestions (Can be expanded)
+                        let suggestions = [];
+                         if (studyTime > 0 && breakTime < (studyTime / 4) && studyTime > 120) { // If studied > 2 hrs and break is less than 1/4th study time
+                             suggestions.push("পড়াশোনার মাঝে পর্যাপ্ত বিশ্রাম যোগ করার কথা বিবেচনা করুন।");
+                         }
+                         if (priorityCounts.high > routine.length / 2 && routine.length > 3) { // If more than half tasks are high priority
+                              suggestions.push("অনেকগুলো উচ্চ অগ্রাধিকারের কাজ রয়েছে। কিছু কাজের অগ্রাধিকার পুনর্বিন্যাস করা যায় কিনা দেখুন।");
+                         }
+                          if (totalDurationMinutes > 60 * 10) { // If total planned time is over 10 hours
+                              suggestions.push("আপনার রুটিন বেশ দীর্ঘ। পর্যাপ্ত ঘুম এবং বিশ্রামের জন্য সময় রাখা নিশ্চিত করুন।");
+                          }
+                         if (suggestions.length > 0) {
+                             summaryLines.push(`<div class="mt-3 pt-2 border-t border-indigo-100/70"><strong class="text-sm font-medium text-green-700 font-bengali block mb-1"><i class="fas fa-lightbulb mr-1"></i> কিছু পরামর্শ:</strong><ul class="list-disc list-inside ml-2 mt-1 text-xs space-y-0.5 font-bengali text-green-800">`);
+                             suggestions.forEach(suggestion => summaryLines.push(`<li>${suggestion}</li>`));
+                             summaryLines.push(`</ul></div>`);
+                         }
+
+
+                        summaryLines.push(`<p class="text-xs text-gray-500 italic mt-3 pt-2 border-t border-indigo-100/70 font-bengali"><i class="fas fa-info-circle mr-1"></i> এটি একটি স্বয়ংক্রিয়ভাবে তৈরি সারসংক্ষেপ।</p>`);
+                        aiSummaryOutput.innerHTML = summaryLines.join('\n');
+                    }
+
+                    // Re-enable button and reset icons/text
+                    aiSummaryButton.disabled = false;
+                    aiSpinner.classList.add('hidden');
+                    aiIcon.classList.remove('hidden');
+                     aiButtonText.textContent = 'পুনরায় তৈরি করুন'; // Change text for subsequent clicks
+
+                }, 1200); // Reduced simulated delay slightly
+            }
+
+            function handlePrint() {
+                 // Add a class to the main container to trigger print-specific layout changes via CSS
+                // appContainer.classList.add('app-container-print'); // We rely more on @media print now
+
+                // Optionally hide elements immediately before print if CSS isn't sufficient (though CSS is preferred)
+                // document.querySelectorAll('.no-print').forEach(el => el.style.display = 'none');
+
+                // Trigger the browser's print dialog
+                 window.print();
+
+                // Clean up after print dialog is closed (or cancelled)
+                // Using setTimeout allows the print process to initiate fully
+                // setTimeout(() => {
+                //     appContainer.classList.remove('app-container-print');
+                //     document.querySelectorAll('.no-print').forEach(el => el.style.display = ''); // Restore display
+                // }, 500); // Delay might need adjustment
+            }
+
+
+        }); // End DOMContentLoaded
+    </script>
+</body>
+</html>
